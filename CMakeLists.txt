@@ -1,5 +1,4 @@
 cmake_minimum_required(VERSION 3.20)
-
 file(STRINGS VERSION APP_VERSION LIMIT_COUNT 1)
 project(qrgen VERSION ${APP_VERSION} LANGUAGES C)
 
@@ -18,3 +17,6 @@ target_link_libraries(qrcore PUBLIC PkgConfig::QRENCODE PNG::PNG)
 add_executable(qrgen src/main.c)
 target_compile_definitions(qrgen PRIVATE APP_VERSION="${PROJECT_VERSION}")
 target_link_libraries(qrgen PRIVATE qrcore)
+
+install(TARGETS qrgen RUNTIME DESTINATION bin)
+install(FILES packaging/qrgen.conf DESTINATION /etc/qrgen)
