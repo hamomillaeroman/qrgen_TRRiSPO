@@ -1,0 +1,10 @@
+Package: qrgen
+Version: @VERSION@
+Section: utils
+Priority: optional
+Architecture: @ARCH@
+Depends: @DEPENDS@
+Maintainer: Krivoruchko_Roman <hamomillaeroman@users.noreply.github.com>
+Description: QR code PNG generator
+ Generates QR codes from text and saves them as PNG images.
+ Supports size selection and error correction levels L/M/Q/H.
