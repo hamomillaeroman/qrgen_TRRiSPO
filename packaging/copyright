@@ -1,0 +1,7 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: qrgen
+Source: https://github.com/hamomillaeroman/qrgen_TRRiSPO
+
+Files: *
+Copyright: 2026 Krivoruchko_Roman <hamomillaeroman@users.noreply.github.com>
+License: MIT
