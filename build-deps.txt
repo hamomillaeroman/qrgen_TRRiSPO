@@ -1,0 +1,7 @@
+build-essential
+cmake
+pkgconf
+libqrencode-dev
+libpng-dev
+dpkg-dev
+lintian

@@ -1,0 +1,15 @@
+build/
+dist/
+cmake-build-*/
+*.o
+*.a
+*.so
+qrgen
+*.deb
+*.gcda
+*.gcno
+*.gcov
+.vscode/
+.idea/
+*.swp
+.DS_Store
