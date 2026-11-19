@@ -41,7 +41,6 @@ static void usage(const char *prog)
     printf("  -l, --level <0-3>      Коррекция: 0=L, 1=M, 2=Q, 3=H\n\n");
     printf("Global options:\n  -h, --help             Справка\n  -V, --version          Версия\n");
 }
-
 int main(int argc, char **argv)
 {
     const char *text = NULL;
@@ -81,7 +80,8 @@ int main(int argc, char **argv)
         default: return 1;
         }
     }
- if (!text) {
+
+    if (!text) {
         fprintf(stderr, "Ошибка: не указан текст (--text).\n");
         return 1;
     }

@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #define PORT 8080
 
@@ -11,6 +12,9 @@ static int answer_to_connection(void *cls, struct MHD_Connection *connection,
                                 const char *version, const char *upload_data,
                                 size_t *upload_data_size, void **con_cls)
 {
+    (void)cls; (void)url; (void)method; (void)version;
+    (void)upload_data; (void)upload_data_size; (void)con_cls;
+
     const char *text = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "text");
     if (!text) {
         const char *err = "Provide ?text=YourText in URL";
@@ -19,7 +23,8 @@ static int answer_to_connection(void *cls, struct MHD_Connection *connection,
         MHD_destroy_response(response);
         return ret;
     }
-char *png_data = NULL;
+
+    char *png_data = NULL;
     size_t png_size = 0;
     FILE *stream = open_memstream(&png_data, &png_size);
     if (!stream) return MHD_NO;
@@ -30,8 +35,7 @@ char *png_data = NULL;
         return MHD_NO;
     }
     fclose(stream);
-
-    struct MHD_Response *response = MHD_create_response_from_buffer(png_size, png_data, MHD_RESPMEM_MUST_FREE);
+struct MHD_Response *response = MHD_create_response_from_buffer(png_size, png_data, MHD_RESPMEM_MUST_FREE);
     MHD_add_response_header(response, "Content-Type", "image/png");
     int ret = MHD_queue_response(connection, MHD_HTTP_OK, response);
     MHD_destroy_response(response);
@@ -41,12 +45,16 @@ char *png_data = NULL;
 int start_server(void)
 {
     struct MHD_Daemon *daemon = MHD_start_daemon(MHD_USE_INTERNAL_POLLING_THREAD, PORT, NULL, NULL,
-                                                 &answer_to_connection, NULL, MHD_OPTION_END);
+                                                 (MHD_AccessHandlerCallback)answer_to_connection, NULL, MHD_OPTION_END);
     if (!daemon) return -1;
     printf("Server running on port %d\n", PORT);
     printf("Open: http://localhost:%d/?text=Hello\n", PORT);
-    printf("Press Enter to stop...\n");
-    getchar();
+    
+    /* Бесконечный цикл для работы в Docker */
+    while (1) {
+        sleep(1);
+    }
+    
     MHD_stop_daemon(daemon);
     return 0;
 }
