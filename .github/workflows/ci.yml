@@ -1,3 +1,4 @@
+cat > .github/workflows/ci.yml << 'EOF'
 name: ci
 on:
   push:
@@ -22,13 +23,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: sudo apt-get update && xargs -a build-deps.txt sudo apt-get install -y && sudo apt-get install -y gcovr
-      - run: rm -rf build && cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_FLAGS=--coverage -DCMAKE_EXE_LINKER_FLAGS=--coverage
-      - run: cmake --build build
-      - run: ctest --test-dir build --output-on-failure --output-junit junit.xml
-      - run: gcovr --root . --filter ".*core\.c" --fail-under-line 70 build
-      - run: rm -rf build && cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_FLAGS="-fsanitize=address,undefined" -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined"
-      - run: cmake --build build
-      - run: export ASAN_OPTIONS=detect_leaks=0; ctest --test-dir build --output-on-failure
+      
+      - name: Build and Test with Coverage
+        run: |
+          rm -rf build
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DENABLE_COVERAGE=ON
+          cmake --build build
+          ctest --test-dir build --output-on-failure --output-junit junit.xml
+          
+      - name: Check Coverage
+        run: gcovr -r . --filter ".*core\.c" --fail-under-line 70
+
+      - name: Build and Test with Sanitizers
+        run: |
+          rm -rf build
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_FLAGS="-fsanitize=address,undefined" -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined"
+          cmake --build build
+          export ASAN_OPTIONS=detect_leaks=0
+          ctest --test-dir build --output-on-failure
+
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -63,3 +76,4 @@ jobs:
       - run: gh release create "${{ github.ref_name }}" dist/*.deb
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+EOF
