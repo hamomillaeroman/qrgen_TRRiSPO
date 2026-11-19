@@ -14,15 +14,16 @@ endif()
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(QRENCODE REQUIRED IMPORTED_TARGET libqrencode)
+pkg_check_modules(MICROHTTPD REQUIRED IMPORTED_TARGET libmicrohttpd)
 find_package(PNG REQUIRED)
 
 add_library(qrcore STATIC src/core.c)
 target_include_directories(qrcore PUBLIC src)
 target_link_libraries(qrcore PUBLIC PkgConfig::QRENCODE PNG::PNG)
 
-add_executable(qrgen src/main.c)
+add_executable(qrgen src/main.c src/server.c)
 target_compile_definitions(qrgen PRIVATE APP_VERSION="${PROJECT_VERSION}")
-target_link_libraries(qrgen PRIVATE qrcore)
+target_link_libraries(qrgen PRIVATE qrcore PkgConfig::MICROHTTPD)
 
 include(CTest)
 if(BUILD_TESTING)

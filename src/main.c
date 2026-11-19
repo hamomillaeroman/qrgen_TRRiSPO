@@ -9,6 +9,8 @@
 #define APP_VERSION "0.0.0"
 #endif
 
+extern int start_server(void);
+
 static void load_config(const char *path, int *level, int *size)
 {
     FILE *f = fopen(path, "r");
@@ -25,10 +27,13 @@ static void load_config(const char *path, int *level, int *size)
     }
     fclose(f);
 }
+
 static void usage(const char *prog)
 {
     printf("Usage: %s <command> [options]\n", prog);
-    printf("Commands:\n  generate               Сгенерировать QR-код в PNG\n\n");
+    printf("Commands:\n");
+    printf("  generate               Сгенерировать QR-код в PNG\n");
+    printf("  server                 Запустить HTTP-сервер на порту 8080\n\n");
     printf("Options for generate:\n");
     printf("  -t, --text <string>    Текст для кодирования (обязательно)\n");
     printf("  -o, --output <file>    Выходной PNG (по умолчанию qr.png)\n");
@@ -47,6 +52,10 @@ int main(int argc, char **argv)
     if (argc < 2) { usage(argv[0]); return 1; }
     if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0) { usage(argv[0]); return 0; }
     if (strcmp(argv[1], "-V") == 0 || strcmp(argv[1], "--version") == 0) { printf("qrgen %s\n", APP_VERSION); return 0; }
+
+    if (strcmp(argv[1], "server") == 0) {
+        return start_server();
+    }
 
     if (strcmp(argv[1], "generate") != 0) {
         fprintf(stderr, "Ошибка: неизвестная команда '%s'.\n", argv[1]);
@@ -72,7 +81,7 @@ int main(int argc, char **argv)
         default: return 1;
         }
     }
-if (!text) {
+ if (!text) {
         fprintf(stderr, "Ошибка: не указан текст (--text).\n");
         return 1;
     }

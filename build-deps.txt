@@ -5,3 +5,6 @@ libqrencode-dev
 libpng-dev
 dpkg-dev
 lintian
+libmicrohttpd-dev
+libmicrohttpd-dev
+libmicrohttpd-dev
