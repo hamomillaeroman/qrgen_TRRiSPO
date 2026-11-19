@@ -18,8 +18,7 @@ jobs:
       - run: cmake -S . -B build -DCMAKE_C_FLAGS=-Werror -DBUILD_TESTING=OFF
       - run: cmake --build build
       - run: cppcheck --enable=warning,style,performance --error-exitcode=1 -q src
-
-  test:
+ test:
     needs: build
     runs-on: ubuntu-24.04
     steps:
@@ -28,22 +27,38 @@ jobs:
           sudo apt-get update
           xargs -a build-deps.txt sudo apt-get install -y
           sudo apt-get install -y gcovr
-      - run: |
+      
+      # --- ШАГ 1: ПРОВЕРКА ПОКРЫТИЯ (без санитайзеров) ---
+      - name: Build and Test (Coverage)
+        run: |
+          rm -rf build
           cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug \
-            -DCMAKE_C_FLAGS="--coverage -fsanitize=address,undefined" \
-            -DCMAKE_EXE_LINKER_FLAGS="--coverage -fsanitize=address,undefined"
-      - run: cmake --build build
-      - run: ctest --test-dir build --output-on-failure --output-junit junit.xml
+            -DCMAKE_C_FLAGS="--coverage" \
+            -DCMAKE_EXE_LINKER_FLAGS="--coverage"
+          cmake --build build
+          ctest --test-dir build --output-on-failure --output-junit junit.xml
+      - name: Check Coverage (70%)
+        run: gcovr --root . --filter "src/core.c" --fail-under-line 70 build
+
+  # --- ШАГ 2: ПРОВЕРКА САНИТАЙЗЕРАМИ (без покрытия) ---
+      - name: Build and Test (Sanitizers)
+        run: |
+          rm -rf build
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_C_FLAGS="-fsanitize=address,undefined" \
+            -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined"
+          cmake --build build
+          ctest --test-dir build --output-on-failure
         env:
           ASAN_OPTIONS: detect_leaks=0
-      - run: gcovr --root . --filter ".*core\.c" --fail-under-line 70 build
+          
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: test-report
           path: build/junit.xml
 
-  package:
+ package:
     needs: test
     runs-on: ubuntu-24.04
     steps:
@@ -58,8 +73,7 @@ jobs:
         with:
           name: deb
           path: dist/*.deb
-
-  release:
+release:
     if: startsWith(github.ref, 'refs/tags/v')
     needs: package
     runs-on: ubuntu-24.04
