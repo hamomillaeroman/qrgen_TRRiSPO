@@ -5,71 +5,48 @@ on:
     tags: ["v*"]
   pull_request:
     branches: [main]
-
 jobs:
   build:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - name: Install dependencies
-        run: sudo apt-get update && xargs -a build-deps.txt sudo apt-get install -y && sudo apt-get install -y cppcheck
-      - name: Configure and Build
-        run: cmake -S . -B build -DCMAKE_C_FLAGS=-Werror -DBUILD_TESTING=OFF && cmake --build build
-      - name: Run Cppcheck
-        run: cppcheck --enable=warning,style,performance --error-exitcode=1 -q src
-
+      - run: sudo apt-get update && xargs -a build-deps.txt sudo apt-get install -y && sudo apt-get install -y cppcheck
+      - run: cmake -S . -B build -DCMAKE_C_FLAGS=-Werror -DBUILD_TESTING=OFF
+      - run: cmake --build build
+      - run: cppcheck --enable=warning,style,performance --error-exitcode=1 -q src
   test:
     needs: build
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - name: Install dependencies
-        run: sudo apt-get update && xargs -a build-deps.txt sudo apt-get install -y && sudo apt-get install -y gcovr
-      
-      - name: Build and Test with Coverage
-        run: |
-          rm -rf build
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_FLAGS="--coverage" -DCMAKE_EXE_LINKER_FLAGS="--coverage"
-          cmake --build build
-          ctest --test-dir build --output-on-failure --output-junit junit.xml
-          
-- name: Check Coverage
-        run: gcovr --root . --filter ".*core\.c" --fail-under-line 70 build
-
-      - name: Build and Test with Sanitizers
+      - run: sudo apt-get update && xargs -a build-deps.txt sudo apt-get install -y && sudo apt-get install -y gcovr
+      - run: rm -rf build && cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_FLAGS="--coverage" -DCMAKE_EXE_LINKER_FLAGS="--coverage"
+      - run: cmake --build build
+      - run: ctest --test-dir build --output-on-failure --output-junit junit.xml
+      - run: gcovr --root . --filter ".*core\.c" --fail-under-line 70 build
+      - run: rm -rf build && cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_FLAGS="-fsanitize=address,undefined" -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined"
+      - run: cmake --build build
+      - run: ctest --test-dir build --output-on-failure
         env:
           ASAN_OPTIONS: detect_leaks=0
-        run: |
-          rm -rf build
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_FLAGS="-fsanitize=address,undefined" -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined"
-          cmake --build build
-          ctest --test-dir build --output-on-failure
-
-      - name: Upload Test Report
+      - uses: actions/upload-artifact@v4
         if: always()
-        uses: actions/upload-artifact@v4
         with:
           name: test-report
           path: build/junit.xml
-
-  package:
+ package:
     needs: test
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - name: Install dependencies
-        run: sudo apt-get update && xargs -a build-deps.txt sudo apt-get install -y && sudo apt-get install -y dpkg-dev lintian
-      - name: Build Package
-        run: chmod +x build_deb.sh && ./build_deb.sh
-      - name: Lintian Check
-        run: lintian --fail-on error dist/*.deb
-      - name: Upload .deb Artifact
-        uses: actions/upload-artifact@v4
+      - run: sudo apt-get update && xargs -a build-deps.txt sudo apt-get install -y && sudo apt-get install -y dpkg-dev lintian
+      - run: chmod +x build_deb.sh && ./build_deb.sh
+      - run: lintian --fail-on error dist/*.deb
+      - uses: actions/upload-artifact@v4
         with:
           name: deb
           path: dist/*.deb
-
-release:
+  release:
     if: startsWith(github.ref, 'refs/tags/v')
     needs: package
     runs-on: ubuntu-24.04
@@ -81,7 +58,6 @@ release:
         with:
           name: deb
           path: dist
-      - name: Create GitHub Release
+      - run: gh release create "${{ github.ref_name }}" dist/*.deb
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release create "${{ github.ref_name }}" dist/*.deb
