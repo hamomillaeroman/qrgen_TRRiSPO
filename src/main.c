@@ -48,6 +48,11 @@ int main(int argc, char **argv)
     if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0) { usage(argv[0]); return 0; }
     if (strcmp(argv[1], "-V") == 0 || strcmp(argv[1], "--version") == 0) { printf("qrgen %s\n", APP_VERSION); return 0; }
 
+    if (strcmp(argv[1], "server") == 0) {
+        extern int start_server(void);
+        return start_server();
+    }
+
     if (strcmp(argv[1], "generate") != 0) {
         fprintf(stderr, "Ошибка: неизвестная команда '%s'.\n", argv[1]);
         return 1;
