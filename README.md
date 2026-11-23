@@ -20,3 +20,6 @@
 ## Что сделано
 
 **ПР 1** — репозиторий, программа на C, deb-пакет с conffile.
+
+**ПР 3** — HTTP-сервер на libmicrohttpd, Docker-образ, публикация на Docker Hub.
+**ПР 4** — Развертывание в кластере Kubernetes (kind), манифесты Deployment и Service.
