@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: qrgen
+  namespace: qrgen
+spec:
+  selector:
+    app: qrgen
+  ports:
+    - port: 80
+      targetPort: 8080
+  type: ClusterIP

@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: qrgen-config
+  namespace: qrgen
+data:
+  APP_PORT: "8080"

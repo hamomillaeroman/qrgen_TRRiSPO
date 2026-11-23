@@ -67,3 +67,25 @@
 * Настроен локальный кластер Kubernetes с помощью `kind`.
 * Написаны манифесты: `k8s/deployment.yaml` (запуск 2 реплик приложения) и `k8s/service.yaml` (ClusterIP для внутреннего балансирования трафика).
 * Приложение успешно развернуто в кластере и проверено через проброс портов (`kubectl port-forward`).
+
+## 🛠 Эксплуатация (ПР 4)
+
+**1. Балансировка нагрузки:**
+Запросы к сервису распределяются между репликами.
+```bash
+kubectl -n qrgen run probe --rm -it --restart=Never --image=curlimages/curl -- sh -c 'while true; do curl -s http://qrgen/version; sleep 1; done'
+
+## 🛠 Эксплуатация (ПР 4)
+
+**1. Балансировка нагрузки:**
+Запросы к сервису распределяются между репликами.
+```bash
+kubectl -n qrgen run probe --rm -it --restart=Never --image=curlimages/curl -- sh -c 'while true; do curl -s http://qrgen/version; sleep 1; done'
+ EOF
+
+##  (ПР 4)
+
+**1. Балансировка нагрузки:**
+Запросы к сервису распределяются между репликами.
+```bash
+kubectl -n qrgen run probe --rm -it --restart=Never --image=curlimages/curl -- sh -c 'while true; do curl -s http://qrgen/version; sleep 1; done'
